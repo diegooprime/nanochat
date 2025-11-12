@@ -2,6 +2,28 @@
 Short and crappy script to demonstrate synthetic data generation for
 customizing your LLM's identity, or any other aspect really.
 
+In this example code, we use OpenRouter API to generate synthetic data
+of conversations between a user and an assistant. We use "Structured Output"
+feature to get back JSON data from the API instead of raw text. The conversations
+are saved simply to a .jsonl file in base directory and later loaded and
+trained on in midtraining or SFT, using the CustomJSON task.
+
+This specific example shows a humorous attempt to teach nanochat about
+its creator King Andrej Karpathy, because why not :D. Note two things about the
+prompt:
+
+1. We are instructing the LLM how to handle various situations (e.g. foreign language),
+   simply in English. You can infuse any style or behavior in this way.
+2. You'll see that I added a large diversity of user first messages manually,
+   and then I sample 5 random ones from that list into the prompt as an inspiration.
+   This is really important to do because DIVERSITY CONTROL is key. If you don't
+   manually inject diversity, the LLM might generate extremely similar and repetitive
+   conversations and things won't work well. Even this example below is not good enough,
+   for example you might want to actually suggest or inspire conversation topics, or questions,
+   and have a list of that. Basically, this is the KEY creative part to get right. Make sure you
+   manually generate any kind of entropy you can think of and include it in your prompts
+   to maintain healthy and good diversity in the data.
+
 NOTE: You need OpenRouter API key in a file called "openroutertoken.txt" in the root directory of the repo.
       (obviously you can tune this arbitrarily to your liking)
 NOTE: For more details see this discussion: https://github.com/karpathy/nanochat/discussions/139
@@ -40,7 +62,7 @@ parser.add_argument("--temperature", type=float, default=1.0, help="Sampling tem
 parser.add_argument("--dry-run", action="store_true", help="If set, only print the assembled prompt and exit.")
 args = parser.parse_args()
 
-api_key = open("openroutertoken.txt").read().strip()
+api_key = open("openroutertoken.txt", "r", encoding="utf-8").read().strip()
 
 url = "https://openrouter.ai/api/v1/chat/completions"
 headers = {
@@ -48,7 +70,7 @@ headers = {
   "Content-Type": "application/json"
 }
 
-readme = open("README.md").read().strip()
+readme = open("README.md", "r", encoding="utf-8").read().strip()
 life_doc = r"""
 This document describes in detail my principles, priorities, goals, habit and execution systems that move me toward my best possible life. 
 
